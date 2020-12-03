@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+
+  staelker:
+    build: 
+      context: .
+      dockerfile: "./Dockerfile.rmq"
+    image: "staelker:latest"
+    restart: "always"
+    ports: 
+      - $FLASK_PORT:$FLASK_PORT
+    env_file: 
+      - ".env"
+    depends_on: 
+      - rmq
+    command: ["python", "main.py"]
+    links: 
+      - rmq:rmq
+
+  listener:
+    build: 
+      context: .
+      dockerfile: "./Dockerfile.rmq"
+    image: "rmq-listener:latest"
+    restart: "always"
+    env_file: 
+      - ".env"
+    depends_on:
+      - rmq 
+    command: ["python", "rmq_listener.py"]
+    links: 
+      - rmq:rmq
+
+  rmq:
+    image: "rabbitmq:latest"
+    ports: 
+      - 5672:5672
